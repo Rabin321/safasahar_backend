@@ -45,7 +45,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // });
 
 app.use("/api", userRouter);
-app.use("/web", webRouter);
+app.use("/", webRouter);
 
 app.use((err, req, res, next) => {
   err.statusCode = err.statusCode || 500;

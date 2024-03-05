@@ -46,4 +46,7 @@ router.post(
   userController.forgetPassword
 );
 
+router.post("/add-staff", userController.addStaff);
+router.get("/get-staff", userController.getStaff);
+
 module.exports = router;

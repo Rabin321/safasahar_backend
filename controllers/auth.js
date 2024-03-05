@@ -319,6 +319,105 @@ const resetPassword = (req, res) => {
   });
 };
 
+const addStaff = (req, res) => {
+  try {
+    // if (!req.user || req.user.is_Admin !== true) {
+    //   return res
+    //     .status(403)
+    //     .json({ error: "Only administrators can add staff." });
+    // }
+    const { name, email, password, location, houseno, wardno, phone } =
+      req.body;
+    const newUser = {
+      name,
+      email,
+      password, // Note: The password here should already be hashed in the req.body
+      location,
+      houseno,
+      wardno,
+      role: "staff",
+      is_Admin: false,
+      is_Staff: true,
+      phone,
+    };
+
+    // Add the staff member to the database
+    addUser(newUser)
+      .then((insertedUserId) => {
+        // Send a success response
+        res
+          .status(201)
+          .json({ message: "Staff member added successfully.", user: newUser });
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(500).json({ error: "Internal Server Error" });
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const addUser = (user) => {
+  return new Promise((resolve, reject) => {
+    // Hash the password
+    bcrypt.hash(user.password, 8, (err, hash) => {
+      if (err) {
+        reject(err);
+      } else {
+        // Construct the SQL query to insert the user data
+        const query = `
+          INSERT INTO users 
+          (name, email, password, location, houseno, wardno, role, is_Admin, is_Staff, phone) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const values = [
+          user.name,
+          user.email,
+          hash, // Use the hashed password
+          user.location,
+          user.houseno,
+          user.wardno,
+          user.role,
+          user.is_Admin,
+          user.is_Staff,
+          user.phone,
+        ];
+
+        // Execute the SQL query
+        db.query(query, values, (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            // Resolve the promise with the inserted user ID
+            resolve(results.insertId);
+          }
+        });
+      }
+    });
+  });
+};
+
+const getStaff = (req, res) => {
+  try {
+    const query =
+      "SELECT * FROM users WHERE is_Staff = true AND role = 'staff'";
+
+    db.query(query, (error, results) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Failed to fetch staff" });
+      }
+
+      return res.status(200).json({ success: true, staffMembers: results });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   register,
   verifyMail,
@@ -327,4 +426,6 @@ module.exports = {
   forgetPassword,
   resetPasswordLoad,
   resetPassword,
+  addStaff,
+  getStaff,
 };

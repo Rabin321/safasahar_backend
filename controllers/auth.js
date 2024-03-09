@@ -180,18 +180,19 @@ const login = (req, res) => {
 };
 
 const getUser = (req, res) => {
-  const authToken = req.headers.authorization.split(" ")[1];
-  const decode = jwt.verify(authToken, JWT_SECRET);
+  const authToken = req.headers;
+  // console.log("🚀 ~ getUser ~ authToken:", authToken);
+  // const decode = jwt.verify(authToken, JWT_SECRET);
 
   db.query(
-    "SELECT * FROM users WHERE id=?",
-    decode.id,
+    "SELECT * FROM users WHERE role NOT IN ('admin', 'staff') AND is_Staff = false AND is_Admin = false",
+    // [decode.id],
     function (error, result, fields) {
       if (error) throw error;
 
       return res.status(200).json({
         success: true,
-        data: result[0],
+        data: result,
       });
     }
   );

@@ -326,14 +326,14 @@ const addStaff = (req, res) => {
     //     .status(403)
     //     .json({ error: "Only administrators can add staff." });
     // }
-    const { name, email, password, location, houseno, wardno, phone } =
+    const { name, email, password, location, wardno, phone } =
       req.body;
     const newUser = {
       name,
       email,
       password, // Note: The password here should already be hashed in the req.body
       location,
-      houseno,
+      // houseno,
       wardno,
       role: "staff",
       is_Admin: false,
@@ -369,15 +369,15 @@ const addUser = (user) => {
         // Construct the SQL query to insert the user data
         const query = `
           INSERT INTO users 
-          (name, email, password, location, houseno, wardno, role, is_Admin, is_Staff, phone) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          (name, email, password, location, wardno, role, is_Admin, is_Staff, phone) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [
           user.name,
           user.email,
           hash, // Use the hashed password
           user.location,
-          user.houseno,
+          // user.houseno,
           user.wardno,
           user.role,
           user.is_Admin,

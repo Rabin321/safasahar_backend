@@ -49,4 +49,6 @@ router.post(
 router.post("/add-staff", userController.addStaff);
 router.get("/get-staff", userController.getStaff);
 
+router.get("/verify-mail", userController.verifyMail);
+
 module.exports = router;

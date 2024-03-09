@@ -108,7 +108,6 @@ const verifyMail = (req, res) => {
         console.log(error.message);
       }
       if (result.length > 0) {
-        console.log("all");
         db.query(
           `UPDATE users SET token = null, is_Verified = true WHERE id = '${result[0].id}'`
         );

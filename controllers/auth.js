@@ -97,23 +97,30 @@ const register = (req, res) => {
 
 const verifyMail = (req, res) => {
   const token = req.query.token;
+  console.log("🚀 ~ verifyMail ~ token:", token);
 
   db.query(
     "SELECT * FROM users WHERE token=? limit 1",
     token,
     function (error, result, fields) {
       if (error) {
+        console.log("hefwafafaewfllo");
         console.log(error.message);
       }
-
       if (result.length > 0) {
-        db.query(`UPDATE users SET token = null WHERE id = '${result[0].id}'`);
+        console.log("all");
+        db.query(
+          `UPDATE users SET token = null, is_Verified = true WHERE id = '${result[0].id}'`
+        );
 
         return res.render("mail-verification", {
           message: "Mail Verified Successfully!",
         });
       } else {
-        return res.render("404");
+        return res.json({
+          success: false,
+          message: "Failed",
+        });
       }
     }
   );

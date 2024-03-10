@@ -58,29 +58,29 @@ const register = (req, res) => {
                   });
                 }
 
-                // let mailSubject = "Mail Verification";
-                // const randomToken = randomstring.generate();
-                // let content =
-                //   "<p>Hi" +
-                //   req.body.name +
-                //   ', Please <a href="http://localhost:5000/mail-verification?token=' +
-                //   randomToken +
-                //   '"> Verify</a> your Mail</p';
+                let mailSubject = "Mail Verification";
+                const randomToken = randomstring.generate();
+                let content =
+                  "<p>Hi" +
+                  req.body.name +
+                  ', Please <a href="http://localhost:5000/mail-verification?token=' +
+                  randomToken +
+                  '"> Verify</a> your Mail</p';
 
-                // sendMail(req.body.email, mailSubject, content);
+                sendMail(req.body.email, mailSubject, content);
 
-                // db.query(
-                //   "UPDATE users SET token=? WHERE email=?",
-                //   [randomToken, req.body.email],
-                //   function (error, result, fields) {
-                //     if (error) {
-                //       res.status(400).json({
-                //         success: false,
-                //         message: err,
-                //       });
-                //     }
-                //   }
-                // );
+                db.query(
+                  "UPDATE users SET token=? WHERE email=?",
+                  [randomToken, req.body.email],
+                  function (error, result, fields) {
+                    if (error) {
+                      res.status(400).json({
+                        success: false,
+                        message: err,
+                      });
+                    }
+                  }
+                );
 
                 return res.status(200).json({
                   success: true,

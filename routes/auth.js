@@ -38,6 +38,8 @@ router.post("/register", userController.register);
 // router.post("/login", loginValidation, userController.login);
 router.post("/login", userController.login);
 
+router.post("/associate-login", userController.associateLogin);
+
 router.get("/get-user", userController.getUser);
 
 router.post(
@@ -45,5 +47,9 @@ router.post(
   forgetValidation,
   userController.forgetPassword
 );
+
+router.post("/add-staff", userController.addStaff);
+router.get("/get-staff", userController.getStaff);
+router.get("/get-staff-ward", userController.getStaffAccWard);
 
 module.exports = router;

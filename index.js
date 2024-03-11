@@ -14,20 +14,20 @@ const webRouter = require("./routes/webRoute");
 
 const app = express();
 
-const db = mysql.createConnection({
-  host: process.env.DATABASE_HOST,
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE,
-});
+// const db = mysql.createConnection({
+//   host: process.env.DATABASE_HOST,
+//   user: process.env.DATABASE_USER,
+//   password: process.env.DATABASE_PASSWORD,
+//   database: process.env.DATABASE,
+// });
 
-db.connect((err) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("MYSQL Connected...");
-  }
-});
+// db.connect((err) => {
+//   if (err) {
+//     console.log(err);
+//   } else {
+//     console.log("MYSQL Connected...");
+//   }
+// });
 
 const PORT = process.env.PORT || 5000;
 
@@ -45,7 +45,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // });
 
 app.use("/api", userRouter);
-app.use("/web", webRouter);
+app.use("/", webRouter);
 
 app.use((err, req, res, next) => {
   err.statusCode = err.statusCode || 500;

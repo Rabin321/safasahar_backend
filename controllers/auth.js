@@ -85,6 +85,8 @@ const register = (req, res) => {
                 return res.status(200).json({
                   success: true,
                   message: "User has been registered",
+                    token: randomToken // Send the token back to the client
+
                 });
               }
             );

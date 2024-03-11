@@ -46,10 +46,11 @@ const register = (req, res) => {
               message: err,
             });
           } else {
+            const role = "user";
             db.query(
-              `INSERT INTO users (name, email, password) VALUES ('${
+              `INSERT INTO users (name, email, password, role) VALUES ('${
                 req.body.name
-              }',${db.escape(req.body.email)}, ${db.escape(hash)})`,
+              }',${db.escape(req.body.email)}, ${db.escape(hash)}, '${role}')`,
               (err, result) => {
                 if (err) {
                   return res.status(400).json({
@@ -99,14 +100,12 @@ const register = (req, res) => {
 
 const verifyMail = (req, res) => {
   const token = req.query.token;
-  console.log("🚀 ~ verifyMail ~ token:", token);
 
   db.query(
     "SELECT * FROM users WHERE token=? limit 1",
     token,
     function (error, result, fields) {
       if (error) {
-        console.log("hefwafafaewfllo");
         console.log(error.message);
       }
       if (result.length > 0) {
@@ -164,11 +163,9 @@ const login = (req, res) => {
             });
           }
           if (bResult) {
-            const token = jwt.sign(
-              { id: result[0]["id"], is_admin: result[0]["is_admin"] },
-              JWT_SECRET,
-              { expiresIn: "1h" }
-            );
+            const token = jwt.sign({ id: result[0]["id"] }, JWT_SECRET, {
+              expiresIn: "1h",
+            });
             // db.query(`UPDATE users SET last_login = now() WHERE id='${result[0]["id"]}'`)
             return res.status(200).json({
               success: true,
@@ -189,11 +186,8 @@ const login = (req, res) => {
 
 const getUser = (req, res) => {
   const authToken = req.headers;
-  // console.log("🚀 ~ getUser ~ authToken:", authToken);
-  // const decode = jwt.verify(authToken, JWT_SECRET);
-
   db.query(
-    "SELECT * FROM users WHERE role NOT IN ('admin', 'staff') AND is_Staff = false AND is_Admin = false",
+    "SELECT * FROM users WHERE is_Verified = true",
     // [decode.id],
     function (error, result, fields) {
       if (error) throw error;
@@ -328,32 +322,79 @@ const resetPassword = (req, res) => {
   });
 };
 
+const associateLogin = (req, res) => {
+  db.query(
+    `SELECT * FROM associate WHERE email = ${db.escape(req.body.email)}`,
+    (err, result) => {
+      console.log("aefjafnjkaef");
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot find associates",
+        });
+      }
+      if (!result.length) {
+        console.log("irjgiojrgojsgr");
+        return res.status(401).json({
+          success: false,
+          message: "Invalid Credentials",
+        });
+      }
+      console.log("aefafamkmkifvmskvfd", result);
+
+      bcrypt.compare(
+        req.body.password,
+        result[0]["password"],
+        (bErr, bResult) => {
+          console.log("yeta");
+          if (bErr) {
+            console.log("error");
+            return res.status(400).json({
+              success: false,
+              message: bErr,
+            });
+          }
+          console.log("yeta hai aaba");
+          if (bResult) {
+            console.log("success");
+            const token = jwt.sign({ id: result[0]["id"] }, JWT_SECRET, {
+              expiresIn: "1h",
+            });
+            console.log(token);
+            return res.status(200).json({
+              success: true,
+              data: result[0],
+              token,
+              message: "Associate logged in",
+            });
+          } else {
+            return res.status(401).json({
+              success: false,
+              message: "Invalid Credentials",
+            });
+          }
+        }
+      );
+    }
+  );
+};
+
 const addStaff = (req, res) => {
   try {
-    // if (!req.user || req.user.is_Admin !== true) {
-    //   return res
-    //     .status(403)
-    //     .json({ error: "Only administrators can add staff." });
-    // }
-    const { name, email, password, location, houseno, wardno, phone } =
-      req.body;
+    const { name, email, password, location, ward, phone } = req.body;
     const newUser = {
       name,
       email,
-      password, // Note: The password here should already be hashed in the req.body
+      password,
       location,
-      houseno,
-      wardno,
-      role: "staff",
-      is_Admin: false,
-      is_Staff: true,
+      ward,
       phone,
+      isAdmin: false,
+      isStaff: true,
     };
 
-    // Add the staff member to the database
     addUser(newUser)
       .then((insertedUserId) => {
-        // Send a success response
         res
           .status(201)
           .json({ message: "Staff member added successfully.", user: newUser });
@@ -370,36 +411,30 @@ const addStaff = (req, res) => {
 
 const addUser = (user) => {
   return new Promise((resolve, reject) => {
-    // Hash the password
     bcrypt.hash(user.password, 8, (err, hash) => {
       if (err) {
         reject(err);
       } else {
-        // Construct the SQL query to insert the user data
         const query = `
-          INSERT INTO users 
-          (name, email, password, location, houseno, wardno, role, is_Admin, is_Staff, phone) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO associate 
+          (name, email, password, location, ward, phone, isAdmin, isStaff) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [
           user.name,
           user.email,
-          hash, // Use the hashed password
+          hash,
           user.location,
-          user.houseno,
-          user.wardno,
-          user.role,
-          user.is_Admin,
-          user.is_Staff,
+          user.ward,
           user.phone,
+          user.isAdmin, // Adding isAdmin value
+          user.isStaff, // Adding isStaff value
         ];
 
-        // Execute the SQL query
         db.query(query, values, (error, results) => {
           if (error) {
             reject(error);
           } else {
-            // Resolve the promise with the inserted user ID
             resolve(results.insertId);
           }
         });
@@ -410,13 +445,37 @@ const addUser = (user) => {
 
 const getStaff = (req, res) => {
   try {
-    const query =
-      "SELECT * FROM users WHERE is_Staff = true AND role = 'staff'";
+    const query = "SELECT * FROM associate WHERE isStaff = true";
 
     db.query(query, (error, results) => {
       if (error) {
         console.log(error);
         return res.status(500).json({ error: "Failed to fetch staff" });
+      }
+
+      return res.status(200).json({ success: true, staffMembers: results });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const getStaffAccWard = (req, res) => {
+  try {
+    // Extract ward from the request body or request parameters
+    const { ward } = req.body; // Assuming ward is sent in the request body
+
+    // Construct the SQL query with a WHERE clause to filter by the ward
+    const query = "SELECT * FROM associate WHERE isStaff = true AND ward = ?";
+
+    // Execute the query with the ward as a parameter
+    db.query(query, [ward], (error, results) => {
+      if (error) {
+        console.log(error);
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch staff from this ward" });
       }
 
       return res.status(200).json({ success: true, staffMembers: results });
@@ -435,6 +494,8 @@ module.exports = {
   forgetPassword,
   resetPasswordLoad,
   resetPassword,
+  associateLogin,
   addStaff,
   getStaff,
+  getStaffAccWard,
 };

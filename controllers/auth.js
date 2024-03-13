@@ -86,6 +86,8 @@ const register = (req, res) => {
                 return res.status(200).json({
                   success: true,
                   message: "User has been registered",
+                    token: randomToken // Send the token back to the client
+
                 });
               }
             );
@@ -459,10 +461,35 @@ const getStaff = (req, res) => {
   }
 };
 
+// const getStaffAccWard = (req, res) => {
+//   try {
+//     // Extract ward from the request body or request parameters
+//     const { ward } = req.body; // Assuming ward is sent in the request body
+
+//     // Construct the SQL query with a WHERE clause to filter by the ward
+//     const query = "SELECT * FROM associate WHERE isStaff = true AND ward = ?";
+
+//     // Execute the query with the ward as a parameter
+//     db.query(query, [ward], (error, results) => {
+//       if (error) {
+//         console.log(error);
+//         return res
+//           .status(500)
+//           .json({ error: "Failed to fetch staff from this ward" });
+//       }
+
+//       return res.status(200).json({ success: true, staffMembers: results });
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
 const getStaffAccWard = (req, res) => {
   try {
-    // Extract ward from the request body or request parameters
-    const { ward } = req.body; // Assuming ward is sent in the request body
+    // Extract ward from the request query parameters
+    const { ward } = req.query;
 
     // Construct the SQL query with a WHERE clause to filter by the ward
     const query = "SELECT * FROM associate WHERE isStaff = true AND ward = ?";
@@ -483,6 +510,7 @@ const getStaffAccWard = (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 module.exports = {
   register,

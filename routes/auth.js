@@ -49,6 +49,7 @@ router.post(
 );
 
 router.post("/add-staff", userController.addStaff);
+router.patch("/edit-staff", userController.editStaff);
 router.get("/get-staff", userController.getStaff);
 router.get("/get-staff-ward", userController.getStaffAccWard);
 

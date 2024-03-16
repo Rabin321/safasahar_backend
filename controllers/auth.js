@@ -19,15 +19,6 @@ const { JWT_SECRET } = process.env;
 // });
 
 const register = (req, res) => {
-  // const errors = validationResult(req);
-
-  // if (!errors.isEmpty()) {
-  //   return res.status(400).json({
-  //     success: false,
-  //     message: "Enter all the fields",
-  //   });
-  // }
-
   db.query(
     `SELECT * FROM users WHERE LOWER(email) = LOWER(${db.escape(
       req.body.email
@@ -48,9 +39,11 @@ const register = (req, res) => {
           } else {
             const role = "user";
             db.query(
-              `INSERT INTO users (name, email, password, role) VALUES ('${
+              `INSERT INTO users (name, email, password, role, phone, isAdmin, isStaff) VALUES ('${
                 req.body.name
-              }',${db.escape(req.body.email)}, ${db.escape(hash)}, '${role}')`,
+              }',${db.escape(req.body.email)}, ${db.escape(
+                hash
+              )}, '${role}', 0, false, false)`,
               (err, result) => {
                 if (err) {
                   return res.status(400).json({
@@ -379,13 +372,15 @@ const associateLogin = (req, res) => {
 
 const addStaff = (req, res) => {
   try {
-    const { name, email, password, location, ward, phone } = req.body;
+    const { name, email, password, location, wardno, houseno, phone } =
+      req.body;
     const newUser = {
       name,
       email,
       password,
       location,
-      ward,
+      wardno,
+      houseno,
       phone,
       isAdmin: false,
       isStaff: true,
@@ -413,27 +408,51 @@ const addUser = (user) => {
       if (err) {
         reject(err);
       } else {
-        const query = `
+        const associateQuery = `
           INSERT INTO associate 
-          (name, email, password, location, ward, phone, isAdmin, isStaff) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          (name, email, password, location, wardno, houseno, phone, isAdmin, isStaff) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        const values = [
+        const associateValues = [
           user.name,
           user.email,
           hash,
           user.location,
-          user.ward,
+          user.wardno,
+          user.houseno,
           user.phone,
-          user.isAdmin, // Adding isAdmin value
-          user.isStaff, // Adding isStaff value
+          user.isAdmin,
+          user.isStaff,
         ];
 
-        db.query(query, values, (error, results) => {
+        db.query(associateQuery, associateValues, (error, associateResults) => {
           if (error) {
             reject(error);
           } else {
-            resolve(results.insertId);
+            const usersQuery = `
+              INSERT INTO users 
+              (name, email, password, role, location, houseno, wardno, phone, is_Verified) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            const usersValues = [
+              user.name,
+              user.email,
+              hash,
+              "staff", // Assuming role for staff members
+              user.location,
+              user.houseno,
+              user.wardno,
+              user.phone,
+              true, // Assuming newly added staff members are already verified
+            ];
+
+            db.query(usersQuery, usersValues, (userError, userResults) => {
+              if (userError) {
+                reject(userError);
+              } else {
+                resolve(associateResults.insertId); // Resolve with the ID from associate table
+              }
+            });
           }
         });
       }
@@ -459,16 +478,80 @@ const getStaff = (req, res) => {
   }
 };
 
+const editStaff = (req, res) => {
+  try {
+    const { id } = req.query;
+    const { name, email, location, wardno, houseno, phone } = req.body;
+
+    let updates = [];
+    let queryParams = [];
+
+    if (name) {
+      updates.push("name=?");
+      queryParams.push(name);
+    }
+    if (email) {
+      updates.push("email=?");
+      queryParams.push(email);
+    }
+    if (location) {
+      updates.push("location=?");
+      queryParams.push(location);
+    }
+    if (wardno) {
+      updates.push("wardno=?");
+      queryParams.push(wardno);
+    }
+    if (houseno) {
+      updates.push("houseno=?");
+      queryParams.push(houseno);
+    }
+    if (phone) {
+      updates.push("phone=?");
+      queryParams.push(phone);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: "No fields provided for update" });
+    }
+
+    const query = `UPDATE associate SET ${updates.join(
+      ", "
+    )} WHERE id = ? AND isStaff = true AND isAdmin = false`;
+
+    db.query(query, [...queryParams, id], (error, results) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Failed to edit staff" });
+      }
+
+      if (results.affectedRows === 0) {
+        return res
+          .status(403)
+          .json({ error: "You cannot edit the data of an admin" });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Staff member updated successfully",
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const getStaffAccWard = (req, res) => {
   try {
     // Extract ward from the request body or request parameters
-    const { ward } = req.body; // Assuming ward is sent in the request body
+    const { wardno } = req.query; // Assuming ward is sent in the request body
 
     // Construct the SQL query with a WHERE clause to filter by the ward
-    const query = "SELECT * FROM associate WHERE isStaff = true AND ward = ?";
+    const query = "SELECT * FROM associate WHERE isStaff = true AND wardno = ?";
 
     // Execute the query with the ward as a parameter
-    db.query(query, [ward], (error, results) => {
+    db.query(query, [wardno], (error, results) => {
       if (error) {
         console.log(error);
         return res
@@ -494,6 +577,7 @@ module.exports = {
   resetPassword,
   associateLogin,
   addStaff,
+  editStaff,
   getStaff,
   getStaffAccWard,
 };

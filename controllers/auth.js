@@ -542,6 +542,36 @@ const editStaff = (req, res) => {
   }
 };
 
+//delete staff
+
+const deleteStaff = (req, res) => {
+  try {
+    const { id } = req.query;
+
+    const query = `DELETE FROM associate WHERE id = ? AND isStaff = true AND isAdmin = false`;
+
+    db.query(query, [id], (error, results) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Failed to delete staff member" });
+      }
+
+      if (results.affectedRows === 0) {
+        return res.status(403).json({ error: "You cannot delete the data of an admin" });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Staff member deleted successfully",
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 const getStaffAccWard = (req, res) => {
   try {
     // Extract ward from the request body or request parameters
@@ -578,6 +608,7 @@ module.exports = {
   associateLogin,
   addStaff,
   editStaff,
+  deleteStaff,
   getStaff,
   getStaffAccWard,
 };

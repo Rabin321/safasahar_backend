@@ -50,6 +50,7 @@ router.post(
 
 router.post("/add-staff", userController.addStaff);
 router.patch("/edit-staff", userController.editStaff);
+router.delete("/delete-staff", userController.deleteStaff);
 router.get("/get-staff", userController.getStaff);
 router.get("/get-staff-ward", userController.getStaffAccWard);
 

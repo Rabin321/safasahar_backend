@@ -79,6 +79,8 @@ const register = (req, res) => {
                 return res.status(200).json({
                   success: true,
                   message: "User has been registered",
+                                      token: randomToken // Send the token back to the client
+
                 });
               }
             );
@@ -88,6 +90,89 @@ const register = (req, res) => {
     }
   );
 };
+
+
+
+// const register = (req, res) => {
+//   // const errors = validationResult(req);
+
+//   // if (!errors.isEmpty()) {
+//   //   return res.status(400).json({
+//   //     success: false,
+//   //     message: "Enter all the fields",
+//   //   });
+//   // }
+
+//   db.query(
+//     `SELECT * FROM users WHERE LOWER(email) = LOWER(${db.escape(
+//       req.body.email
+//     )})`,
+//     (err, result) => {
+//       if (result && result.length) {
+//         return res.status(400).json({
+//           success: false,
+//           message: "User already exists",
+//         });
+//       } else {
+//         bcrypt.hash(req.body.password, 8, (err, hash) => {
+//           if (err) {
+//             return res.status(400).json({
+//               success: false,
+//               message: err,
+//             });
+//           } else {
+//             const role = "user";
+//             db.query(
+//               `INSERT INTO users (name, email, password, role) VALUES ('${
+//                 req.body.name
+//               }',${db.escape(req.body.email)}, ${db.escape(hash)}, '${role}')`,
+//               (err, result) => {
+//                 if (err) {
+//                   return res.status(400).json({
+//                     success: false,
+//                     message: err,
+//                   });
+//                 }
+
+//                 let mailSubject = "Mail Verification";
+//                 const randomToken = randomstring.generate();
+//                 let content =
+//                   "<p>Hi" +
+//                   req.body.name +
+//                   ', Please <a href="http://localhost:5000/mail-verification?token=' +
+//                   randomToken +
+//                   '"> Verify</a> your Mail</p';
+
+//                 sendMail(req.body.email, mailSubject, content);
+
+//                 db.query(
+//                   "UPDATE users SET token=? WHERE email=?",
+//                   [randomToken, req.body.email],
+//                   function (error, result, fields) {
+//                     if (error) {
+//                       res.status(400).json({
+//                         success: false,
+//                         message: err,
+//                       });
+//                     }
+//                   }
+//                 );
+
+//                 return res.status(200).json({
+//                   success: true,
+//                   message: "User has been registered",
+//                     token: randomToken // Send the token back to the client
+
+//                 });
+//               }
+//             );
+//           }
+//         });
+//       }
+//     }
+//   );
+// };
+
 
 const verifyMail = (req, res) => {
   const token = req.query.token;

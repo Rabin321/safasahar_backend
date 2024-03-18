@@ -79,6 +79,7 @@ const register = (req, res) => {
                 return res.status(200).json({
                   success: true,
                   message: "User has been registered",
+                  token: randomToken,
                 });
               }
             );
@@ -567,6 +568,100 @@ const getStaffAccWard = (req, res) => {
   }
 };
 
+const addDustbin = (req, res) => {
+  try {
+    const { location, wardno, assigned_staff, dustbin_type } = req.body;
+    const fill_percentage = 50;
+
+    db.query(
+      "INSERT INTO dustbin (location, wardno, fill_percentage, assigned_staff, dustbin_type) VALUES (?, ?, ?, ?, ?)",
+      [location, wardno, fill_percentage, assigned_staff, dustbin_type],
+      (err, result) => {
+        if (err) {
+          console.error("Failed to add a dustbin:", err);
+          return res.status(400).json({
+            success: false,
+            message: "Failed to add a dustbin",
+          });
+        }
+        return res.status(200).json({
+          success: true,
+          message: "Dustbin added successfully",
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Error adding dustbin:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const getDustbin = (req, res) => {
+  try {
+    db.query(" SELECT * FROM dustbin", (err, result) => {
+      if (err) {
+        console.error("Error getting dustbins:", err);
+        return res.status(400).json({
+          success: false,
+          message: "Failed to get dustbins",
+        });
+      }
+      console.log("Dustbins retrieved successfully");
+      return res.status(200).json({
+        success: true,
+        data: result,
+      });
+    });
+  } catch (error) {
+    console.error("Error getting dustbin:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const getDustbinFilter = (req, res) => {
+  try {
+    const { assigned_staff, location, wardno } = req.query;
+
+    let query = "SELECT * FROM dustbin WHERE 1";
+
+    if (assigned_staff) {
+      query += ` AND assigned_staff = ${assigned_staff}`;
+    }
+    if (location) {
+      query += ` AND location = '${location}'`;
+    }
+    if (wardno) {
+      query += ` AND wardno = ${wardno}`;
+    }
+
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Error getting filtered dustbins:", err);
+        return res.status(400).json({
+          success: false,
+          message: "Failed to get filtered dustbins",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        data: results,
+      });
+    });
+  } catch (error) {
+    console.error("Error getting filter dustbin:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 module.exports = {
   register,
   verifyMail,
@@ -580,4 +675,7 @@ module.exports = {
   editStaff,
   getStaff,
   getStaffAccWard,
+  addDustbin,
+  getDustbin,
+  getDustbinFilter,
 };

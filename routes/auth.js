@@ -53,4 +53,8 @@ router.patch("/edit-staff", userController.editStaff);
 router.get("/get-staff", userController.getStaff);
 router.get("/get-staff-ward", userController.getStaffAccWard);
 
+router.post("/add-dustbin", userController.addDustbin);
+router.get("/get-dustbin", userController.getDustbin);
+router.get("/get-filter-dustbin", userController.getDustbinFilter);
+
 module.exports = router;

@@ -717,31 +717,26 @@ const getPickupTime = (req, res) => {
 
 const getPickupTimeFilter = (req, res) => {
   try {
-    let query = "SELECT * FROM schedule";
-    const queryParams = [];
+    const { location, wardno } = req.query;
 
-    if (req.query.location) {
-      const locations = Array.isArray(req.query.location)
-        ? req.query.location
-        : [req.query.location];
+    let query = "SELECT * FROM schedule WHERE 1";
 
-      if (locations.length === 1) {
-        query += " WHERE location = ?";
-        queryParams.push(locations[0]);
-      } else {
-        const placeholders = locations.map(() => "?").join(",");
-        query += " WHERE location IN (" + placeholders + ")";
-        queryParams.push(...locations);
-      }
+    if (location) {
+      query += ` AND location = '${location}'`;
+    }
+    if (wardno) {
+      query += ` AND wardno = ${wardno}`;
     }
 
-    db.query(query, queryParams, (error, results, fields) => {
-      if (error) {
-        return res.status(500).json({
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Error getting filtered pickup times:", err);
+        return res.status(400).json({
           success: false,
-          message: "Error getting filtered pickup times",
+          message: "Failed to get filtered pickup times",
         });
       }
+      console.log("Filtered pickup times retrieved successfully");
       return res.status(200).json({
         success: true,
         data: results,
@@ -754,6 +749,46 @@ const getPickupTimeFilter = (req, res) => {
     });
   }
 };
+
+// const getPickupTimeFilter = (req, res) => {
+//   try {
+//     let query = "SELECT * FROM schedule";
+//     const queryParams = [];
+
+//     if (req.query.location) {
+//       const locations = Array.isArray(req.query.location)
+//         ? req.query.location
+//         : [req.query.location];
+
+//       if (locations.length === 1) {
+//         query += " WHERE location = ?";
+//         queryParams.push(locations[0]);
+//       } else {
+//         const placeholders = locations.map(() => "?").join(",");
+//         query += " WHERE location IN (" + placeholders + ")";
+//         queryParams.push(...locations);
+//       }
+//     }
+
+//     db.query(query, queryParams, (error, results, fields) => {
+//       if (error) {
+//         return res.status(500).json({
+//           success: false,
+//           message: "Error getting filtered pickup times",
+//         });
+//       }
+//       return res.status(200).json({
+//         success: true,
+//         data: results,
+//       });
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
 
 // const getPickupTimeFilter = (req, res) => {
 //   try {

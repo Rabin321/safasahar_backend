@@ -57,4 +57,8 @@ router.post("/add-dustbin", userController.addDustbin);
 router.get("/get-dustbin", userController.getDustbin);
 router.get("/get-filter-dustbin", userController.getDustbinFilter);
 
+router.post("/add-time", userController.addPickupTime);
+router.get("/get-time", userController.getPickupTime);
+router.get("/get-filter-time", userController.getPickupTimeFilter);
+
 module.exports = router;

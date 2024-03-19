@@ -662,6 +662,133 @@ const getDustbinFilter = (req, res) => {
   }
 };
 
+const addPickupTime = (req, res) => {
+  try {
+    const { location, wardno, street, pickup_time, message } = req.body;
+
+    db.query(
+      "INSERT INTO schedule (location, wardno, street, pickup_time, message) VALUES (?, ?, ?, ?, ?)",
+      [location, wardno, street, pickup_time, message],
+      (error, results, fields) => {
+        if (error) {
+          return res.status(500).json({
+            success: false,
+            message: "Cannot add pickup time",
+          });
+        }
+        return res.status(200).json({
+          success: true,
+          message: "Pickup time added successfully",
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Error adding pickup time:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const getPickupTime = (req, res) => {
+  try {
+    db.query(" SELECT * FROM schedule", (err, result) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Failed to get pickup time",
+        });
+      }
+      console.log("Pickup time retrieved successfully");
+      return res.status(200).json({
+        success: true,
+        data: result,
+      });
+    });
+  } catch (error) {
+    console.error("Error getting pickup times:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const getPickupTimeFilter = (req, res) => {
+  try {
+    let query = "SELECT * FROM schedule";
+    const queryParams = [];
+
+    if (req.query.location) {
+      const locations = Array.isArray(req.query.location)
+        ? req.query.location
+        : [req.query.location];
+
+      if (locations.length === 1) {
+        query += " WHERE location = ?";
+        queryParams.push(locations[0]);
+      } else {
+        const placeholders = locations.map(() => "?").join(",");
+        query += " WHERE location IN (" + placeholders + ")";
+        queryParams.push(...locations);
+      }
+    }
+
+    db.query(query, queryParams, (error, results, fields) => {
+      if (error) {
+        return res.status(500).json({
+          success: false,
+          message: "Error getting filtered pickup times",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        data: results,
+      });
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// const getPickupTimeFilter = (req, res) => {
+//   try {
+//     const { location } = req.query;
+
+//     let query = "SELECT * FROM schedule";
+
+//     const queryParams = [];
+
+//     if (location) {
+//       query += " WHERE location = ?";
+//       queryParams.push(location);
+//     }
+
+//     db.query(query, queryParams, (error, results, fields) => {
+//       if (error) {
+//         return res.status(500).json({
+//           success: false,
+//           message: "Error getting filtered pickup times",
+//         });
+//       }
+//       return res.status(200).json({
+//         success: true,
+//         data: results,
+//       });
+//     });
+//   } catch (error) {
+//     console.error("Error getting filtered pickup times:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
+
 module.exports = {
   register,
   verifyMail,
@@ -678,4 +805,7 @@ module.exports = {
   addDustbin,
   getDustbin,
   getDustbinFilter,
+  addPickupTime,
+  getPickupTime,
+  getPickupTimeFilter,
 };

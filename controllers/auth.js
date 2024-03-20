@@ -570,8 +570,8 @@ const getStaffAccWard = (req, res) => {
 
 const addDustbin = (req, res) => {
   try {
-    const { location, wardno, assigned_staff, dustbin_type } = req.body;
-    const fill_percentage = 50;
+    const { location, fill_percentage, wardno, assigned_staff, dustbin_type } =
+      req.body;
 
     db.query(
       "INSERT INTO dustbin (location, wardno, fill_percentage, assigned_staff, dustbin_type) VALUES (?, ?, ?, ?, ?)",

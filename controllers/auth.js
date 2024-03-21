@@ -662,6 +662,96 @@ const getDustbinFilter = (req, res) => {
   }
 };
 
+const editDustbin = (req, res) => {
+  try {
+    const { location, fill_percentage, wardno, assigned_staff, dustbin_type } =
+      req.body;
+    const id = req.query.id;
+
+    db.query(
+      "SELECT location, fill_percentage, wardno, assigned_staff, dustbin_type FROM dustbin WHERE id = ?",
+      [id],
+      (error, results, fields) => {
+        if (error) {
+          return res.status(500).json({
+            success: false,
+            message: "Error fetching existing data",
+          });
+        }
+
+        if (results.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: "Dustbin not found",
+          });
+        }
+
+        const existingData = results[0];
+
+        const updatedFields = {};
+
+        if (location !== undefined) updatedFields.location = location;
+        if (wardno !== undefined) updatedFields.wardno = wardno;
+        if (fill_percentage !== undefined)
+          updatedFields.fill_percentage = fill_percentage;
+        if (assigned_staff !== undefined)
+          updatedFields.assigned_staff = assigned_staff;
+        if (dustbin_type !== undefined)
+          updatedFields.dustbin_type = dustbin_type;
+
+        db.query(
+          "UPDATE dustbin SET ? WHERE id = ?",
+          [updatedFields, id],
+          (error, results, fields) => {
+            if (error) {
+              return res.status(400).json({
+                success: false,
+                message: "Error editing dustbin",
+              });
+            }
+            return res.status(200).json({
+              success: true,
+              message: "Dustbin edited successfully",
+            });
+          }
+        );
+      }
+    );
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const deleteDustbin = (req, res) => {
+  try {
+    const id = req.query.id;
+    db.query(
+      "DELETE FROM dustbin WHERE id = ?",
+      [id],
+      (error, results, fields) => {
+        if (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Error deleting dustbin",
+          });
+        }
+        return res.status(200).json({
+          success: true,
+          message: "Dustbin deleted successfully",
+        });
+      }
+    );
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 const addPickupTime = (req, res) => {
   try {
     const { location, wardno, street, pickup_time, message } = req.body;
@@ -742,6 +832,93 @@ const getPickupTimeFilter = (req, res) => {
         data: results,
       });
     });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const editTime = (req, res) => {
+  try {
+    const { location, wardno, street, pickup_time, message } = req.body;
+    const id = req.query.id;
+
+    db.query(
+      "SELECT location, wardno, street, pickup_time, message FROM schedule WHERE id = ?",
+      [id],
+      (error, results, fields) => {
+        if (error) {
+          return res.status(500).json({
+            success: false,
+            message: "Error fetching existing data",
+          });
+        }
+
+        if (results.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: "Schedule not found",
+          });
+        }
+
+        const existingData = results[0];
+
+        const updatedFields = {};
+
+        if (location !== undefined) updatedFields.location = location;
+        if (wardno !== undefined) updatedFields.wardno = wardno;
+        if (street !== undefined) updatedFields.street = street;
+        if (pickup_time !== undefined) updatedFields.pickup_time = pickup_time;
+        if (message !== undefined) updatedFields.message = message;
+
+        db.query(
+          "UPDATE schedule SET ? WHERE id = ?",
+          [updatedFields, id],
+          (error, results, fields) => {
+            if (error) {
+              return res.status(400).json({
+                success: false,
+                message: "Error editing pickup time",
+              });
+            }
+            return res.status(200).json({
+              success: true,
+              message: "Pickup time edited successfully",
+            });
+          }
+        );
+      }
+    );
+  } catch (error) {
+    console.error("Error editing pickup time:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const deleteTime = (req, res) => {
+  try {
+    const id = req.query.id;
+    db.query(
+      "DELETE FROM schedule WHERE id = ?",
+      [id],
+      (error, results, fields) => {
+        if (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Error deleting pickup time",
+          });
+        }
+        return res.status(200).json({
+          success: true,
+          message: "Pickup time deleted successfully",
+        });
+      }
+    );
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -840,7 +1017,11 @@ module.exports = {
   addDustbin,
   getDustbin,
   getDustbinFilter,
+  editDustbin,
+  deleteDustbin,
   addPickupTime,
   getPickupTime,
   getPickupTimeFilter,
+  editTime,
+  deleteTime,
 };

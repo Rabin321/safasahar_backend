@@ -49,7 +49,20 @@ router.post(
 );
 
 router.post("/add-staff", userController.addStaff);
+router.patch("/edit-staff", userController.editStaff);
 router.get("/get-staff", userController.getStaff);
 router.get("/get-staff-ward", userController.getStaffAccWard);
+
+router.post("/add-dustbin", userController.addDustbin);
+router.get("/get-dustbin", userController.getDustbin);
+router.get("/get-filter-dustbin", userController.getDustbinFilter);
+router.patch("/edit-dustbin", userController.editDustbin);
+router.delete("/delete-dustbin", userController.deleteDustbin);
+
+router.post("/add-time", userController.addPickupTime);
+router.get("/get-time", userController.getPickupTime);
+router.get("/get-filter-time", userController.getPickupTimeFilter);
+router.patch("/edit-time", userController.editTime);
+router.delete("/delete-time", userController.deleteTime);
 
 module.exports = router;

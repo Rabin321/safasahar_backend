@@ -58,11 +58,21 @@ router.get("/get-dustbin", userController.getDustbin);
 router.get("/get-filter-dustbin", userController.getDustbinFilter);
 router.patch("/edit-dustbin", userController.editDustbin);
 router.delete("/delete-dustbin", userController.deleteDustbin);
+router.get("/dustbin-stats", userController.getDustbinStats);
 
 router.post("/add-time", userController.addPickupTime);
 router.get("/get-time", userController.getPickupTime);
 router.get("/get-filter-time", userController.getPickupTimeFilter);
 router.patch("/edit-time", userController.editTime);
 router.delete("/delete-time", userController.deleteTime);
+
+router.get("/stats", userController.getStats);
+
+router.post("/create-payment", userController.createPayment);
+router.get(
+  "/khalti/callback",
+  userController.handleKhaltiCallback,
+  userController.createPayment
+);
 
 module.exports = router;

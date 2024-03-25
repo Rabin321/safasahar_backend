@@ -8,6 +8,7 @@ const db = require("../config/dbConnection");
 const randomstring = require("randomstring");
 
 const sendMail = require("../helpers/sendMail");
+const { default: axios } = require("axios");
 
 const { JWT_SECRET } = process.env;
 
@@ -752,6 +753,60 @@ const deleteDustbin = (req, res) => {
   }
 };
 
+const getDustbinStats = (req, res) => {
+  try {
+    const dustbinStats = {
+      "Full Dustbin": 0,
+      "Half Dustbin": 0,
+      "Empty Dustbin": 0,
+      "Damaged Dustbin": 0,
+    };
+
+    db.query(
+      "SELECT dustbin_type, COUNT(*) as count FROM dustbin GROUP BY dustbin_type",
+      (err, results) => {
+        if (err) {
+          return res.status(400).json({
+            success: false,
+            message: "Failed to get dustbin statistics",
+          });
+        }
+
+        results.forEach((row) => {
+          console.log(row);
+          const status = row.dustbin_type;
+          const count = row.count;
+
+          switch (status) {
+            case "full":
+              dustbinStats["Full Dustbin"] = count;
+              break;
+            case "half":
+              dustbinStats["Half Dustbin"] = count;
+              break;
+            case "empty":
+              dustbinStats["Empty Dustbin"] = count;
+              break;
+            case "damaged":
+              dustbinStats["Damaged Dustbin"] = count;
+              break;
+          }
+        });
+
+        return res.status(200).json({
+          success: true,
+          data: dustbinStats,
+        });
+      }
+    );
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 const addPickupTime = (req, res) => {
   try {
     const { location, wardno, street, pickup_time, message } = req.body;
@@ -927,6 +982,153 @@ const deleteTime = (req, res) => {
   }
 };
 
+const getStats = (req, res) => {
+  try {
+    db.query(
+      "SELECT COUNT(*) AS totalDustbins FROM dustbin",
+      (err, dustbinResult) => {
+        if (err) {
+          return res.status(400).json({
+            success: false,
+            message: "Failed to get total dustbins",
+          });
+        }
+
+        db.query(
+          "SELECT COUNT(*) AS activeUsers FROM associate WHERE isStaff = true",
+          (err, activeUsersResult) => {
+            if (err) {
+              return res.status(400).json({
+                success: false,
+                message: "Failed to get active users",
+              });
+            }
+
+            db.query(
+              "SELECT COUNT(*) AS inactiveUsers FROM associate WHERE isStaff = false",
+              (err, inactiveUsersResult) => {
+                if (err) {
+                  return res.status(400).json({
+                    success: false,
+                    message: "Failed to get inactive users",
+                  });
+                }
+
+                const statistics = [
+                  { title: "Dustbins", data: dustbinResult[0].totalDustbins },
+                  {
+                    title: "Active users",
+                    data: activeUsersResult[0].activeUsers,
+                  },
+                  {
+                    title: "Inactive users",
+                    data: inactiveUsersResult[0].inactiveUsers,
+                  },
+                ];
+                return res.status(200).json({
+                  success: true,
+                  data: statistics,
+                });
+              }
+            );
+          }
+        );
+      }
+    );
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const callKhalti = async (formData, req, res) => {
+  try {
+    const headers = {
+      Authorization: `Key ${process.env.KHALTI_SECRET_KEY}`,
+      "Content-Type": "application/json",
+    };
+    console.log("My headers", headers);
+    const response = await axios.post(
+      "https://a.khalti.com/api/v2/epayment/initiate/",
+      formData,
+      {
+        headers,
+      }
+    );
+    console.log("Response baby", response.data);
+    console.log("Response Payment Url", response.data.payment_url);
+    res.json({
+      message: "khalti success",
+      payment_method: "khalti",
+      data: response.data,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({ error: err?.message });
+  }
+};
+
+const handleKhaltiCallback = async (req, res, next) => {
+  try {
+    const { txnId, pidx, amount, purchase_order_id, transaction_id, message } =
+      req.query;
+    if (message) {
+      return res
+        .status(400)
+        .json({ error: message || "Error Processing Khalti" });
+    }
+
+    const headers = {
+      Authorization: `Key ${process.env.KHALTI_SECRET_KEY}`,
+      "Content-Type": "application/json",
+    };
+    const response = await axios.post(
+      "https://a.khalti.com/api/v2/epayment/lookup/",
+      { pidx },
+      { headers }
+    );
+
+    console.log("Response of handle Khalti", response.data);
+    if (response.data.status !== "Completed") {
+      return res.status(400).json({ error: "Payment not completed" });
+    }
+
+    console.log(
+      "Response of handle Khalti with all details",
+      purchase_order_id,
+      pidx
+    );
+    req.transaction_uuid = purchase_order_id;
+    req.transaction_code = pidx;
+    next();
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(400)
+      .json({ error: err?.message || "Error Processing Khalti" });
+  }
+};
+
+const createPayment = (req, res) => {
+  try {
+    const formData = {
+      return_url: "http://localhost:5005/api/khalti/callback",
+      website_url: "http://localhost:5005",
+      amount: 150 * 100, //paisa
+      purchase_order_id: "1234556789",
+      purchase_order_name: "test",
+    };
+
+    callKhalti(formData, req, res);
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error,
+    });
+  }
+};
 // const getPickupTimeFilter = (req, res) => {
 //   try {
 //     let query = "SELECT * FROM schedule";
@@ -1019,9 +1221,14 @@ module.exports = {
   getDustbinFilter,
   editDustbin,
   deleteDustbin,
+  getDustbinStats,
   addPickupTime,
   getPickupTime,
   getPickupTimeFilter,
   editTime,
   deleteTime,
+  getStats,
+  callKhalti,
+  handleKhaltiCallback,
+  createPayment,
 };

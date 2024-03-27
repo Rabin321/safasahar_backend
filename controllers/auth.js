@@ -1132,6 +1132,113 @@ const createPayment = (req, res) => {
     });
   }
 };
+
+const createReport = (req, res) => {
+  try {
+    const { location, wardno, details } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide an image file.",
+      });
+    }
+
+    const image = `images/${req?.file?.filename}`;
+
+    // if (!location || !wardno || !details) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message:
+    //       "Please provide location, ward number, and details for the report.",
+    //   });
+    // }
+
+    db.query(
+      "INSERT INTO report (location, wardno, details, image) VALUES (?, ?, ?, ?)",
+      [location, wardno, details, image],
+      (err, result) => {
+        if (err) {
+          return res.status(400).json({
+            success: false,
+            message: "Failed to create a report",
+          });
+        }
+        return res.status(200).json({
+          success: true,
+          message: "Report created successfully",
+        });
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      error,
+    });
+  }
+};
+
+const getReport = (req, res) => {
+  try {
+    db.query(" SELECT * FROM report", (err, result) => {
+      if (err) {
+        console.error("Error getting reports:", err);
+        return res.status(400).json({
+          success: false,
+          message: "Failed to get reports",
+        });
+      }
+      console.log("Reports retrieved successfully");
+      return res.status(200).json({
+        success: true,
+        data: result,
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const getFilteredReport = (req, res) => {
+  try {
+    const { location, wardno } = req.query;
+
+    let query = "SELECT * FROM report WHERE 1";
+
+    if (location) {
+      query += ` AND location = '${location}'`;
+    }
+    if (wardno) {
+      query += ` AND wardno = ${wardno}`;
+    }
+
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Error getting filtered reports:", err);
+        return res.status(400).json({
+          success: false,
+          message: "Failed to get filtered reports",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        data: results,
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 // const getPickupTimeFilter = (req, res) => {
 //   try {
 //     let query = "SELECT * FROM schedule";
@@ -1234,4 +1341,7 @@ module.exports = {
   callKhalti,
   handleKhaltiCallback,
   createPayment,
+  createReport,
+  getReport,
+  getFilteredReport,
 };

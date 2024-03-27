@@ -1137,12 +1137,12 @@ const createReport = (req, res) => {
   try {
     const { location, wardno, details } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide an image file.",
-      });
-    }
+    // if (!req.file) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Please provide an image file.",
+    //   });
+    // }
 
     const image = `images/${req?.file?.filename}`;
 

@@ -14,13 +14,13 @@ const storage = multer.diskStorage({
   },
 });
 
-const fileFilter = (req, file, cb) => {
+const filefilter = (req, file, cb) => {
   file.mimetype == "image/jpeg" || file.mimetype == "image/png"
     ? cb(null, true)
     : cb(null, false);
 };
 
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({ storage: storage, fileFilter: filefilter });
 
 const {
   signUpValidation,
@@ -33,7 +33,7 @@ const userController = require("../controllers/auth");
 const auth = require("../middleware/auths");
 
 // router.post("/register", signUpValidation, userController.register);
-router.post("/register", userController.register);
+router.post("/register", upload.single("image"), userController.register);
 
 // router.post("/login", loginValidation, userController.login);
 router.post("/login", userController.login);
@@ -48,7 +48,7 @@ router.post(
   userController.forgetPassword
 );
 
-router.post("/add-staff", userController.addStaff);
+router.post("/add-staff", upload.single("image"), userController.addStaff);
 router.patch("/edit-staff", userController.editStaff);
 router.get("/get-staff", userController.getStaff);
 router.get("/get-staff-ward", userController.getStaffAccWard);

@@ -40,11 +40,11 @@ const register = (req, res) => {
           } else {
             const role = "user";
             db.query(
-              `INSERT INTO users (name, email, password, role, phone, isAdmin, isStaff) VALUES ('${
+              `INSERT INTO users (name, email, password, image, role, phone, isAdmin, isStaff) VALUES ('${
                 req.body.name
-              }',${db.escape(req.body.email)}, ${db.escape(
-                hash
-              )}, '${role}', 0, false, false)`,
+              }',${db.escape(req.body.email)}, ${db.escape(hash)}, 'images/${
+                req?.file?.filename
+              }', '${role}', 0, false, false);`,
               (err, result) => {
                 if (err) {
                   return res.status(400).json({
@@ -386,6 +386,7 @@ const addStaff = (req, res) => {
       phone,
       isAdmin: false,
       isStaff: true,
+      image: `images/${req?.file?.filename}`,
     };
 
     addUser(newUser)
@@ -412,8 +413,8 @@ const addUser = (user) => {
       } else {
         const associateQuery = `
           INSERT INTO associate 
-          (name, email, password, location, wardno, houseno, phone, isAdmin, isStaff) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          (name, email, password, location, wardno, houseno, phone, isAdmin, isStaff, image) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const associateValues = [
           user.name,
@@ -425,6 +426,7 @@ const addUser = (user) => {
           user.phone,
           user.isAdmin,
           user.isStaff,
+          user.image,
         ];
 
         db.query(associateQuery, associateValues, (error, associateResults) => {
@@ -433,8 +435,8 @@ const addUser = (user) => {
           } else {
             const usersQuery = `
               INSERT INTO users 
-              (name, email, password, role, location, houseno, wardno, phone, is_Verified) 
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+              (name, email, password, role, location, houseno, wardno, phone, is_Verified, image) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             const usersValues = [
               user.name,
@@ -446,6 +448,7 @@ const addUser = (user) => {
               user.wardno,
               user.phone,
               true, // Assuming newly added staff members are already verified
+              user.image,
             ];
 
             db.query(usersQuery, usersValues, (userError, userResults) => {

@@ -75,4 +75,12 @@ router.get(
   userController.createPayment
 );
 
+router.post(
+  "/create-report",
+  upload.single("image"),
+  userController.createReport
+);
+router.get("/get-report", userController.getReport);
+router.get("/get-filter-report", userController.getFilteredReport);
+
 module.exports = router;

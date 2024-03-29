@@ -41,6 +41,8 @@ router.post("/login", userController.login);
 router.post("/associate-login", userController.associateLogin);
 
 router.get("/get-user", userController.getUser);
+router.get("/get-user-ward", userController.getUserAccWard);
+
 
 router.post(
   "/forget-password",

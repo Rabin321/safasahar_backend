@@ -193,6 +193,30 @@ const getUser = (req, res) => {
   );
 };
 
+const getUserAccWard = (req, res) => {
+  try {
+    // Extract ward number from the request query or parameters
+    const { wardno } = req.query; // Assuming ward number is sent in the request query
+
+    // Construct the SQL query with a WHERE clause to filter by the ward number
+    const query = "SELECT * FROM users WHERE wardno = ?";
+
+    // Execute the query with the ward number as a parameter
+    db.query(query, [wardno], (error, results) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Failed to fetch users from this ward" });
+      }
+
+      return res.status(200).json({ success: true, users: results });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 const forgetPassword = (req, res) => {
   const errors = validationResult(req);
 
@@ -1318,6 +1342,7 @@ module.exports = {
   verifyMail,
   login,
   getUser,
+  getUserAccWard,
   forgetPassword,
   resetPasswordLoad,
   resetPassword,

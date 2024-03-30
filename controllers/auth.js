@@ -193,6 +193,8 @@ const getUser = (req, res) => {
   );
 };
 
+const getUserAccWard = (req, res) => {};
+
 const forgetPassword = (req, res) => {
   const errors = validationResult(req);
 
@@ -1060,8 +1062,8 @@ const callKhalti = async (formData, req, res) => {
         headers,
       }
     );
-    console.log("Response baby", response.data);
-    console.log("Response Payment Url", response.data.payment_url);
+    const { transaction_token, amount, mobile_no } = req.body;
+    await paymentCreate(transaction_token, amount, mobile_no);
     res.json({
       message: "khalti success",
       payment_method: "khalti",
@@ -1123,13 +1125,30 @@ const createPayment = (req, res) => {
       purchase_order_id: "1234556789",
       purchase_order_name: "test",
     };
-
+    console.log(formData);
     callKhalti(formData, req, res);
   } catch (error) {
     return res.status(400).json({
       success: false,
       message: error,
     });
+  }
+};
+
+const paymentCreate = async (transaction_token, amount, mobile_no) => {
+  try {
+    const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
+    const currentDate = new Date().toISOString().slice(0, 10);
+
+    await db.query(insertQuery, [
+      transaction_token,
+      amount,
+      mobile_no,
+      currentDate,
+    ]);
+  } catch (error) {
+    console.error("Error creating payment:", error);
+    throw new Error("Failed to create payment");
   }
 };
 
@@ -1318,6 +1337,7 @@ module.exports = {
   verifyMail,
   login,
   getUser,
+  getUserAccWard,
   forgetPassword,
   resetPasswordLoad,
   resetPassword,

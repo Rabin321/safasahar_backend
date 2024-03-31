@@ -1086,7 +1086,16 @@ const callKhalti = async (formData, req, res) => {
       }
     );
     const { transaction_token, amount, mobile_no } = req.body;
-    await paymentCreate(transaction_token, amount, mobile_no);
+    // await paymentCreate(transaction_token, amount, mobile_no);
+    const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
+    const currentDate = new Date().toISOString().slice(0, 10);
+
+    await db.query(insertQuery, [
+      transaction_token,
+      amount,
+      mobile_no,
+      currentDate,
+    ]);
     res.json({
       message: "khalti success",
       payment_method: "khalti",

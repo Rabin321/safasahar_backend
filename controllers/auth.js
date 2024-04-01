@@ -1169,11 +1169,11 @@ const createPayment = (req, res) => {
 
 const paymentCreate = (req, res) => {
   try {
-    const { transaction_token, amount, mobile_no } = req.body;
-    const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
+    const { name, email,transaction_token, amount, mobile_no } = req.body;
+    const insertQuery = `INSERT INTO payment (name,email,transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?, ?, ?)`;
     const currentDate = new Date().toISOString().slice(0, 10);
 
-    db.query(insertQuery, [transaction_token, amount, mobile_no, currentDate]);
+    db.query(insertQuery, [name, email,transaction_token, amount, mobile_no, currentDate]);
     return res.status(201).json({
       success: true,
       message: "Payment Created Successfully",

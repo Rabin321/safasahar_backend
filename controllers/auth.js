@@ -1085,17 +1085,17 @@ const callKhalti = async (formData, req, res) => {
         headers,
       }
     );
-    const { transaction_token, amount, mobile_no } = req.body;
+    // const { transaction_token, amount, mobile_no } = req.body;
     // await paymentCreate(transaction_token, amount, mobile_no);
-    const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
-    const currentDate = new Date().toISOString().slice(0, 10);
+    // const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
+    // const currentDate = new Date().toISOString().slice(0, 10);
 
-    await db.query(insertQuery, [
-      transaction_token,
-      amount,
-      mobile_no,
-      currentDate,
-    ]);
+    // await db.query(insertQuery, [
+    //   transaction_token,
+    //   amount,
+    //   mobile_no,
+    //   currentDate,
+    // ]);
     res.json({
       message: "khalti success",
       payment_method: "khalti",
@@ -1167,22 +1167,39 @@ const createPayment = (req, res) => {
   }
 };
 
-const paymentCreate = async (transaction_token, amount, mobile_no) => {
+const paymentCreate = (req, res) => {
   try {
+    const { transaction_token, amount, mobile_no } = req.body;
     const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
     const currentDate = new Date().toISOString().slice(0, 10);
 
-    await db.query(insertQuery, [
-      transaction_token,
-      amount,
-      mobile_no,
-      currentDate,
-    ]);
+    db.query(insertQuery, [transaction_token, amount, mobile_no, currentDate]);
+    return res.status(201).json({
+      success: true,
+      message: "Payment Created Successfully",
+    });
   } catch (error) {
     console.error("Error creating payment:", error);
     throw new Error("Failed to create payment");
   }
 };
+
+// const paymentCreate = async (transaction_token, amount, mobile_no) => {
+//   try {
+//     const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
+//     const currentDate = new Date().toISOString().slice(0, 10);
+
+//     await db.query(insertQuery, [
+//       transaction_token,
+//       amount,
+//       mobile_no,
+//       currentDate,
+//     ]);
+//   } catch (error) {
+//     console.error("Error creating payment:", error);
+//     throw new Error("Failed to create payment");
+//   }
+// };
 
 const createReport = (req, res) => {
   try {
@@ -1393,6 +1410,7 @@ module.exports = {
   callKhalti,
   handleKhaltiCallback,
   createPayment,
+  paymentCreate,
   createReport,
   getReport,
   getFilteredReport,

@@ -70,6 +70,7 @@ router.delete("/delete-time", userController.deleteTime);
 router.get("/stats", userController.getStats);
 
 router.post("/create-payment", userController.createPayment);
+router.post("/payment", userController.paymentCreate);
 router.get(
   "/khalti/callback",
   userController.handleKhaltiCallback,

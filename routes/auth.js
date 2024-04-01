@@ -43,7 +43,6 @@ router.post("/associate-login", userController.associateLogin);
 router.get("/get-user", userController.getUser);
 router.get("/get-user-ward", userController.getUserAccWard);
 
-
 router.post(
   "/forget-password",
   forgetValidation,
@@ -71,6 +70,8 @@ router.delete("/delete-time", userController.deleteTime);
 router.get("/stats", userController.getStats);
 
 router.post("/create-payment", userController.createPayment);
+router.get("/get-payment-details", userController.getPaymentDetails);
+router.post("/payment", userController.paymentCreate);
 router.get(
   "/khalti/callback",
   userController.handleKhaltiCallback,

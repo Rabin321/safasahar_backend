@@ -205,7 +205,9 @@ const getUserAccWard = (req, res) => {
     db.query(query, [wardno], (error, results) => {
       if (error) {
         console.log(error);
-        return res.status(500).json({ error: "Failed to fetch users from this ward" });
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch users from this ward" });
       }
 
       return res.status(200).json({ success: true, users: results });
@@ -215,7 +217,6 @@ const getUserAccWard = (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 const forgetPassword = (req, res) => {
   const errors = validationResult(req);
@@ -1084,8 +1085,17 @@ const callKhalti = async (formData, req, res) => {
         headers,
       }
     );
-    console.log("Response baby", response.data);
-    console.log("Response Payment Url", response.data.payment_url);
+    // const { transaction_token, amount, mobile_no } = req.body;
+    // await paymentCreate(transaction_token, amount, mobile_no);
+    // const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
+    // const currentDate = new Date().toISOString().slice(0, 10);
+
+    // await db.query(insertQuery, [
+    //   transaction_token,
+    //   amount,
+    //   mobile_no,
+    //   currentDate,
+    // ]);
     res.json({
       message: "khalti success",
       payment_method: "khalti",
@@ -1147,7 +1157,7 @@ const createPayment = (req, res) => {
       purchase_order_id: "1234556789",
       purchase_order_name: "test",
     };
-
+    console.log(formData);
     callKhalti(formData, req, res);
   } catch (error) {
     return res.status(400).json({
@@ -1156,6 +1166,72 @@ const createPayment = (req, res) => {
     });
   }
 };
+
+const paymentCreate = (req, res) => {
+  try {
+    const { name, email,transaction_token, amount, mobile_no } = req.body;
+    const insertQuery = `INSERT INTO payment (name,email,transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?, ?, ?)`;
+    const currentDate = new Date().toISOString().slice(0, 10);
+
+    db.query(insertQuery, [name, email,transaction_token, amount, mobile_no, currentDate]);
+    return res.status(201).json({
+      success: true,
+      message: "Payment Created Successfully",
+    });
+  } catch (error) {
+    console.error("Error creating payment:", error);
+    throw new Error("Failed to create payment");
+  }
+};
+
+
+const getPaymentDetails = (req, res) => {
+  try {
+    // Construct the SQL query to fetch all payment details
+    const selectQuery = `SELECT * FROM payment`;
+
+    // Execute the query
+    db.query(selectQuery, (err, results) => {
+      if (err) {
+        console.error("Error fetching payment details:", err);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to fetch payment details",
+        });
+      }
+
+      // Return the payment details
+      return res.status(200).json({
+        success: true,
+        message: "Payment details fetched successfully",
+        data: results,
+      });
+    });
+  } catch (error) {
+    console.error("Error fetching payment details:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch payment details",
+    });
+  }
+};
+
+// const paymentCreate = async (transaction_token, amount, mobile_no) => {
+//   try {
+//     const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
+//     const currentDate = new Date().toISOString().slice(0, 10);
+
+//     await db.query(insertQuery, [
+//       transaction_token,
+//       amount,
+//       mobile_no,
+//       currentDate,
+//     ]);
+//   } catch (error) {
+//     console.error("Error creating payment:", error);
+//     throw new Error("Failed to create payment");
+//   }
+// };
 
 const createReport = (req, res) => {
   try {
@@ -1366,6 +1442,8 @@ module.exports = {
   callKhalti,
   handleKhaltiCallback,
   createPayment,
+  getPaymentDetails,
+  paymentCreate,
   createReport,
   getReport,
   getFilteredReport,

@@ -1235,7 +1235,7 @@ const getPaymentDetails = (req, res) => {
 
 const createReport = (req, res) => {
   try {
-    const { location, wardno, details } = req.body;
+    const { name, email, location, wardno, details } = req.body;
 
     // if (!req.file) {
     //   return res.status(400).json({
@@ -1255,8 +1255,8 @@ const createReport = (req, res) => {
     // }
 
     db.query(
-      "INSERT INTO report (location, wardno, details, image) VALUES (?, ?, ?, ?)",
-      [location, wardno, details, image],
+      "INSERT INTO report (name, email, location, wardno, details, image) VALUES (?, ?, ?, ?, ?, ?)",
+      [name, email, location, wardno, details, image],
       (err, result) => {
         if (err) {
           return res.status(400).json({

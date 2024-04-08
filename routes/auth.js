@@ -86,4 +86,12 @@ router.post(
 router.get("/get-report", userController.getReport);
 router.get("/get-filter-report", userController.getFilteredReport);
 
+router.post(
+  "/create-bulk-request",
+  upload.single("image"),
+  userController.createBulkRequest
+);
+router.get("/get-bulk-request", userController.getBulkRequest);
+router.get("/get-filter-bulk-request", userController.getFilteredBulkRequest);
+
 module.exports = router;

@@ -1339,6 +1339,97 @@ const getFilteredReport = (req, res) => {
   }
 };
 
+const createBulkRequest = (req, res) => {
+  try {
+    const { location, wardno, message } = req.body;
+
+    const image = `images/${req?.file?.filename}`;
+
+    db.query(
+      "INSERT INTO bulkrequest (location, wardno, message, image) VALUES (?, ?, ?, ?)",
+      [location, wardno, message, image],
+      (err, result) => {
+        if (err) {
+          return res.status(400).json({
+            success: false,
+            message: "Failed to create a bulk request",
+          });
+        }
+        return res.status(200).json({
+          success: true,
+          message: "Bulk Request created successfully",
+        });
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      error,
+    });
+  }
+};
+
+const getBulkRequest = (req, res) => {
+  try {
+    db.query(" SELECT * FROM bulkrequest", (err, result) => {
+      if (err) {
+        console.error("Error getting bulk requests:", err);
+        return res.status(400).json({
+          success: false,
+          message: "Failed to get bulk request",
+        });
+      }
+      console.log("Bulk Requests retrieved successfully");
+      return res.status(200).json({
+        success: true,
+        data: result,
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const getFilteredBulkRequest = (req, res) => {
+  try {
+    const { location, wardno } = req.query;
+
+    let query = "SELECT * FROM bulkrequest WHERE 1";
+
+    if (location) {
+      query += ` AND location = '${location}'`;
+    }
+    if (wardno) {
+      query += ` AND wardno = ${wardno}`;
+    }
+
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Error getting filtered bulk request:", err);
+        return res.status(400).json({
+          success: false,
+          message: "Failed to get filtered bulk request",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        data: results,
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 // const getPickupTimeFilter = (req, res) => {
 //   try {
 //     let query = "SELECT * FROM schedule";
@@ -1447,4 +1538,7 @@ module.exports = {
   createReport,
   getReport,
   getFilteredReport,
+  createBulkRequest,
+  getBulkRequest,
+  getFilteredBulkRequest,
 };

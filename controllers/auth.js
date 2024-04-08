@@ -1191,6 +1191,37 @@ const paymentCreate = (req, res) => {
   }
 };
 
+const getPaymentDetails = (req, res) => {
+  try {
+    // Construct the SQL query to fetch all payment details
+    const selectQuery = `SELECT * FROM payment`;
+
+    // Execute the query
+    db.query(selectQuery, (err, results) => {
+      if (err) {
+        console.error("Error fetching payment details:", err);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to fetch payment details",
+        });
+      }
+
+      // Return the payment details
+      return res.status(200).json({
+        success: true,
+        message: "Payment details fetched successfully",
+        data: results,
+      });
+    });
+  } catch (error) {
+    console.error("Error fetching payment details:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch payment details",
+    });
+  }
+};
+
 // const paymentCreate = async (transaction_token, amount, mobile_no) => {
 //   try {
 //     const insertQuery = `INSERT INTO payment (transaction_token, amount, mobile_no, date) VALUES (?, ?, ?, ?)`;
@@ -1509,6 +1540,7 @@ module.exports = {
   handleKhaltiCallback,
   createPayment,
   paymentCreate,
+  getPaymentDetails,
   createReport,
   getReport,
   getFilteredReport,

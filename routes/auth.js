@@ -84,6 +84,9 @@ router.post(
   upload.single("image"),
   userController.createReport
 );
+router.delete("/delete-user-report", userController.deleteReportById);
+
+
 router.get("/get-report", userController.getReport);
 router.get("/get-filter-report", userController.getFilteredReport);
 
@@ -92,6 +95,8 @@ router.post(
   upload.single("image"),
   userController.createBulkRequest
 );
+
+router.delete("/delete-bulk-request", userController.deleteBulkRequestbyid);
 router.get("/get-bulk-request", userController.getBulkRequest);
 router.get("/get-filter-bulk-request", userController.getFilteredBulkRequest);
 

@@ -1285,6 +1285,41 @@ const createReport = (req, res) => {
   }
 };
 
+
+const deleteReportById = (req, res) => {
+  try {
+    const reportId = req.query.id;
+
+    db.query(
+      "DELETE FROM report WHERE id = ?",
+      [reportId],
+      (err, result, fields) => {
+        if (err) {
+          console.error("Error deleting report:", err);
+          return res.status(400).json({
+            success: false,
+            message: "Failed to delete report",
+          });
+        }
+
+        
+
+        console.log("Report deleted successfully");
+        return res.status(200).json({
+          success: true,
+          message: "Report deleted successfully",
+        });
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 const getReport = (req, res) => {
   try {
     db.query(" SELECT * FROM report", (err, result) => {
@@ -1375,6 +1410,34 @@ const createBulkRequest = (req, res) => {
     });
   }
 };
+
+const deleteBulkRequestbyid = (req, res) => {
+  try {
+    const id = req.query.id;
+    db.query(
+      "DELETE FROM bulkrequest WHERE id = ?",
+      [id],
+      (error, results, fields) => {
+        if (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Error deleting bulk request",
+          });
+        }
+        return res.status(200).json({
+          success: true,
+          message: "bulk request deleted successfully",
+        });
+      }
+    );
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 
 const getBulkRequest = (req, res) => {
   try {
@@ -1542,9 +1605,11 @@ module.exports = {
   paymentCreate,
   getPaymentDetails,
   createReport,
+  deleteReportById,
   getReport,
   getFilteredReport,
   createBulkRequest,
   getBulkRequest,
+  deleteBulkRequestbyid,
   getFilteredBulkRequest,
 };

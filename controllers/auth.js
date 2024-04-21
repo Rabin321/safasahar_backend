@@ -430,6 +430,47 @@ const addStaff = (req, res) => {
   }
 };
 
+const deleteStaffById = (req, res) => {
+  try {
+    const { id } = req.query;
+
+    // Delete related records from the dustbin table first
+    const deleteDustbinQuery = `DELETE FROM dustbin WHERE assigned_staff = ?`;
+
+    db.query(deleteDustbinQuery, [id], (dustbinError, dustbinResults) => {
+      if (dustbinError) {
+        console.log(dustbinError);
+        return res.status(500).json({ error: "Failed to delete staff's related records" });
+      }
+
+      // Now delete the staff member from the associate table
+      const deleteStaffQuery = `DELETE FROM associate WHERE id = ? AND isStaff = true AND isAdmin = false`;
+
+      db.query(deleteStaffQuery, [id], (error, results) => {
+        if (error) {
+          console.log(error);
+          return res.status(500).json({ error: "Failed to delete staff" });
+        }
+
+        if (results.affectedRows === 0) {
+          return res.status(404).json({ error: "Staff member not found" });
+        }
+
+        return res.status(200).json({ success: true, message: "Staff member deleted successfully" });
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+
+
+
+
+
 const addUser = (user) => {
   return new Promise((resolve, reject) => {
     bcrypt.hash(user.password, 8, (err, hash) => {
@@ -1580,6 +1621,7 @@ module.exports = {
   addStaff,
   editStaff,
   getStaff,
+  deleteStaffById,
   getStaffAccWard,
   addDustbin,
   getDustbin,

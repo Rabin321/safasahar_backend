@@ -53,9 +53,10 @@ router.post("/add-staff", upload.single("image"), userController.addStaff);
 router.patch("/edit-staff", userController.editStaff);
 router.get("/get-staff", userController.getStaff);
 router.get("/get-staff-ward", userController.getStaffAccWard);
+router.delete("/delete-staff", userController.deleteStaffById);
 
 router.post("/add-dustbin", userController.addDustbin);
-router.get("/get-dustbin", userController.getDustbin);
+router.get("/get-dustbin", userController.getDustbin);  
 router.get("/get-filter-dustbin", userController.getDustbinFilter);
 router.patch("/edit-dustbin", userController.editDustbin);
 router.delete("/delete-dustbin", userController.deleteDustbin);

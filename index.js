@@ -14,6 +14,10 @@ const webRouter = require("./routes/webRoute");
 
 const app = express();
 
+// console.log(path.join(__dirname, "public"));
+// http://localhost:5000/images/hello.png
+app.use(express.static(path.join(__dirname, "public")));
+
 // const db = mysql.createConnection({
 //   host: process.env.DATABASE_HOST,
 //   user: process.env.DATABASE_USER,

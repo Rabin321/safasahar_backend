@@ -401,29 +401,53 @@ const addStaff = (req, res) => {
   try {
     const { name, email, password, location, wardno, houseno, phone } =
       req.body;
-    const newUser = {
-      name,
-      email,
-      password,
-      location,
-      wardno,
-      houseno,
-      phone,
-      isAdmin: false,
-      isStaff: true,
-      image: `images/${req?.file?.filename}`,
-    };
 
-    addUser(newUser)
-      .then((insertedUserId) => {
-        res
-          .status(201)
-          .json({ message: "Staff member added successfully.", user: newUser });
-      })
-      .catch((error) => {
-        console.log(error);
-        res.status(500).json({ error: "Internal Server Error" });
-      });
+    db.query(
+      `SELECT * FROM associate WHERE email = ? OR phone = ?`,
+      [email, phone],
+      (error, results) => {
+        if (error) {
+          console.log(error);
+          return res.status(500).json({ error: "Internal Server Error" });
+        }
+
+        if (results.length > 0) {
+          return res
+            .status(400)
+            .json({
+              error:
+                "Staff with the same email or phone number already exists.",
+            });
+        }
+
+        const newUser = {
+          name,
+          email,
+          password,
+          location,
+          wardno,
+          houseno,
+          phone,
+          isAdmin: false,
+          isStaff: true,
+          image: `images/${req?.file?.filename}`,
+        };
+
+        addUser(newUser)
+          .then((insertedUserId) => {
+            res
+              .status(201)
+              .json({
+                message: "Staff member added successfully.",
+                user: newUser,
+              });
+          })
+          .catch((error) => {
+            console.log(error);
+            res.status(500).json({ error: "Internal Server Error" });
+          });
+      }
+    );
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal Server Error" });

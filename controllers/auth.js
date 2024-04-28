@@ -1298,51 +1298,92 @@ const getPaymentDetails = (req, res) => {
 //   }
 // };
 
-const createReport = (req, res) => {
+// const createReport = (req, res) => {
+//   try {
+//     const { name, email, location, wardno, details } = req.body;
+
+//     // if (!req.file) {
+//     //   return res.status(400).json({
+//     //     success: false,
+//     //     message: "Please provide an image file.",
+//     //   });
+//     // }
+
+//     const image = `images/${req?.file?.filename}`;
+
+//     // if (!location || !wardno || !details) {
+//     //   return res.status(400).json({
+//     //     success: false,
+//     //     message:
+//     //       "Please provide location, ward number, and details for the report.",
+//     //   });
+//     // }
+
+//     db.query(
+//       "INSERT INTO report (name, email, location, wardno, details, image) VALUES (?, ?, ?, ?, ?, ?)",
+//       [name, email, location, wardno, details, image],
+//       (err, result) => {
+//         if (err) {
+//           return res.status(400).json({
+//             success: false,
+//             message: "Failed to create a report",
+//           });
+//         }
+//         return res.status(200).json({
+//           success: true,
+//           message: "Report created successfully",
+//         });
+//       }
+//     );
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({
+//       success: false,
+//       error,
+//     });
+//   }
+// };
+
+const createReport = async (req, res) => {
   try {
-    const { name, email, location, wardno, details } = req.body;
+    const { name, email, location, wardno, details, imageData } = req.body;
 
-    // if (!req.file) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Please provide an image file.",
-    //   });
-    // }
+    
 
-    const image = `images/${req?.file?.filename}`;
-
-    // if (!location || !wardno || !details) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message:
-    //       "Please provide location, ward number, and details for the report.",
-    //   });
-    // }
+    // Decode the base64 encoded image data
+    const imageBuffer = Buffer.from(imageData, 'base64');
 
     db.query(
-      "INSERT INTO report (name, email, location, wardno, details, image) VALUES (?, ?, ?, ?, ?, ?)",
-      [name, email, location, wardno, details, image],
-      (err, result) => {
-        if (err) {
-          return res.status(400).json({
-            success: false,
-            message: "Failed to create a report",
-          });
-        }
-        return res.status(200).json({
-          success: true,
-          message: "Report created successfully",
-        });
+            "INSERT INTO report (name, email, location, wardno, details, image) VALUES (?, ?, ?, ?, ?, ?)",
+            [name, email, location, wardno, details, imageBuffer],
+    (err, connection) => {
+      if (err) {
+        return res.status(400).json({
+                      success: false,
+                      message: "Failed to create a report",
+                    });
       }
-    );
+
+
+      
+          return res.status(200).json({
+            success: true,
+            error: "REport created successfully",
+          });
+        
+    }
+        );
   } catch (error) {
-    console.log(error);
+    console.error("Error creating report:", error);
     return res.status(500).json({
       success: false,
-      error,
+      error: "Internal Server Error"
     });
   }
 };
+
+
+
 
 
 const deleteReportById = (req, res) => {
